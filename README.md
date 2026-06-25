@@ -8,7 +8,7 @@ Built for the **Zero Carbon One** assignment — focused on clean architecture, 
 
 | Requirement | Link / Location |
 |-------------|-----------------|
-| **GitHub Repository** | Add your repo URL here after publishing |
+| **GitHub Repository** | [Repo Link](https://github.com/JahanviSharma16/bill-extractor.git) |
 | **Demo Video (~5 min)** | [Watch on Google Drive](https://drive.google.com/file/d/17dlVf0NvIYsBrRe-6T7d4abaz6cyS20h/view?usp=sharing) |
 | **Architecture Diagram** | [Architecture](#architecture) section below |
 | **Docker Setup** | [Docker](#docker) section below |
