@@ -4,6 +4,24 @@ Agentic AI-powered platform for processing Indian utility bills and invoices. Up
 
 Built for the **Zero Carbon One** assignment — focused on clean architecture, maintainable code, and practical AI workflow design.
 
+## Submission
+
+| Requirement | Link / Location |
+|-------------|-----------------|
+| **GitHub Repository** | Add your repo URL here after publishing |
+| **Demo Video (~5 min)** | [Watch on Google Drive](https://drive.google.com/file/d/17dlVf0NvIYsBrRe-6T7d4abaz6cyS20h/view?usp=sharing) |
+| **Architecture Diagram** | [Architecture](#architecture) section below |
+| **Docker Setup** | [Docker](#docker) section below |
+| **Setup & Design Docs** | This README |
+
+### Demo walkthrough (covered in video)
+
+1. **Upload process** — Upload page: drag-and-drop, upload progress, processing status
+2. **OCR workflow** — Review page: OCR method badge + raw OCR output (`pdf_parse` / `hybrid_ocr` / `tesseract`)
+3. **Agentic extraction** — Review page: document type, vendor, extracted fields (classify → vendor → extract via Groq)
+4. **Validation process** — Review page: validation warnings; re-runs on save/approve
+5. **Final structured output** — Review page: standardized JSON + approve → stored in MongoDB
+
 ## Architecture
 
 ```mermaid
@@ -156,15 +174,29 @@ Register at `/register`. The **first registered user becomes admin** automatical
 
 ## Docker
 
+The application runs with a single command as required by the assignment:
+
 ```bash
-# Root .env with GROQ_API_KEY and JWT_SECRET
+# 1. Create root .env (same folder as docker-compose.yml)
 cp .env.example .env
 
+# 2. Edit .env and set:
+#    GROQ_API_KEY=your_groq_api_key
+#    JWT_SECRET=any_long_random_secret
+
+# 3. Start all services
 docker-compose up --build
 ```
 
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:3000 |
+| Backend API | http://localhost:8000 |
+| Health check | http://localhost:8000/api/health |
+
+**Services started:** `mongo`, `redis`, `backend`, `worker`, `frontend`
+
+> Redis and MongoDB run inside Docker only (no host port binding) to avoid conflicts with local installs.
 
 ## API Endpoints
 
@@ -205,24 +237,28 @@ docker-compose up --build
 
 ## Design Decisions & Assumptions
 
-1. **Hybrid OCR** — Most digital PDFs have embedded text; OCR fallback handles scanned bills.
+1. **Hybrid OCR** — Most digital PDFs have embedded text; OCR fallback handles scanned bills. Requires GraphicsMagick + Ghostscript for PDF→image conversion.
 2. **Separate worker process** — Keeps API responsive; BullMQ handles retries and concurrency.
-3. **Sequential AI agents** — Each task has a focused prompt; trade-off is 3 API calls vs. 1, but better accuracy and observability.
-4. **Rule-based validation** — Complements LLM output with deterministic checks (duplicates, negatives, missing fields).
-5. **First user = admin** — Simplifies demo setup without a seed script.
-6. **Indian utility context** — Vendor examples (Tata Power, IOCL, BSES) and field schemas match assignment spec.
+3. **Sequential AI agents** — Three Groq calls (classify → vendor → extract) instead of one prompt — better accuracy and debuggability.
+4. **Rule-based validation** — Complements LLM output with deterministic checks (missing fields, incorrect units, duplicates, negative values).
+5. **MongoDB stores all artifacts** — OCR text, AI output, user corrections, approval status, and file binary (`fileData`).
+6. **RBAC** — Admin sees all documents and manages users; regular users see only their own uploads.
+7. **First user = admin** — Simplifies demo setup without a seed script.
+8. **Indian utility context** — Vendor examples (Tata Power, IOCL, BSES) and field schemas match assignment spec.
+9. **Cloud AI (Option B)** — Groq Llama 3.3 70B for extraction; OCR runs locally via Tesseract.
 
-## Demo Video Checklist
+## Demo Video
 
-Record a ~5 min walkthrough showing:
+**Link:** [Screen Recording — Full Demo](https://drive.google.com/file/d/17dlVf0NvIYsBrRe-6T7d4abaz6cyS20h/view?usp=sharing)
 
-1. Register / login
-2. Upload a utility bill (PDF or image)
-3. Watch processing status update
-4. Open review screen — OCR text + extracted fields
-5. Show validation warnings (if any)
-6. Edit a field, save, approve
-7. Show final standardized JSON
+The video demonstrates:
+- Register / login
+- Upload utility bill (PDF)
+- Processing status on dashboard
+- OCR output and extraction results on review screen
+- Validation warnings
+- Edit, save, and approve flow
+- Final standardized JSON output
 
 ## Project Structure
 
@@ -245,6 +281,8 @@ utility-bill-extractor/
 │       ├── components/
 │       ├── context/
 │       └── pages/
+├── sample-documents/     # Test PDFs for demo
+├── scripts/              # Sample PDF generator
 ├── docker-compose.yml
 └── README.md
 ```

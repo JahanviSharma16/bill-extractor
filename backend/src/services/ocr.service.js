@@ -71,9 +71,23 @@ const processDocument = async (filePath, mimeType) => {
     const directText = await extractPdfText(filePath);
 
     if (!hasEnoughText(directText)) {
-      const ocrText = await extractPdfTextViaOCR(filePath);
-      text = combineExtractedContent(directText, ocrText);
-      ocrMethod = "hybrid_ocr";
+      try {
+        const ocrText = await extractPdfTextViaOCR(filePath);
+        text = combineExtractedContent(directText, ocrText);
+        ocrMethod = "hybrid_ocr";
+      } catch (error) {
+        if (directText?.trim()) {
+          console.warn(
+            "OCR fallback unavailable (install GraphicsMagick + Ghostscript). Using direct PDF text only."
+          );
+          text = directText;
+          ocrMethod = "pdf_parse_limited";
+        } else {
+          throw new Error(
+            "PDF OCR requires GraphicsMagick and Ghostscript. Install with: brew install graphicsmagick ghostscript"
+          );
+        }
+      }
     } else {
       text = directText;
       ocrMethod = "pdf_parse";
