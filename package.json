@@ -1,0 +1,16 @@
+{
+  "name": "utility-bill-extractor",
+  "version": "1.0.0",
+  "description": "Agentic AI-powered platform for processing Indian utility bills and invoices. Upload PDFs or images, run hybrid OCR, extract structured data with Groq LLM, validate results, and approve via human review.",
+  "main": "index.js",
+  "scripts": {
+    "generate-samples": "node scripts/generate-sample-pdfs.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "pdfkit": "^0.19.1"
+  }
+}

@@ -1,0 +1,66 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: 8000
+      MONGO_URI: mongodb://mongo:27017/utility_bill_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_change_in_production}
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      - mongo
+      - redis
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.worker
+    restart: unless-stopped
+    environment:
+      MONGO_URI: mongodb://mongo:27017/utility_bill_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_change_in_production}
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      - mongo
+      - redis
+      - backend
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:
+  uploads_data:
