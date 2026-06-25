@@ -110,11 +110,7 @@ We use **Option B (Cloud API)** via **Groq** for the assignment:
 
 ## Sample Test Documents
 
-Three sample PDFs are included for testing. Upload them via the UI to verify the full pipeline:
-
-```bash
-npm run generate-samples   # Regenerate if needed
-```
+Three sample PDFs are included for testing.
 
 | File | Document Type |
 |------|---------------|
