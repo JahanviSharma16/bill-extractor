@@ -91,7 +91,12 @@ const login = async (req, res) => {
 const getProfile = async (req, res) => {
   return res.json({
     success: true,
-    user: req.user,
+    user: {
+      id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+      role: req.user.role,
+    },
   });
 };
 
